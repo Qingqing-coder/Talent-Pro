@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.base_study_test.irms_back.mapper.LoginMapper">
+    <resultMap id="Base_Post" type="com.base_study_test.irms_back.entity.Login">
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="role" column="role"/>
+    </resultMap>
+
+    <select id="selectByUsername" resultMap="Base_Post">
+        select
+        username, password, role
+        from login
+        where username = #{username}
+    </select>
+
+    <insert id="addLogin">
+        insert into login(username, password, role) values(#{username}, #{password}, #{role})
+    </insert>
+
+    <select id="selectOneAdmin" resultMap="Base_Post">
+        select
+        username, password, role
+        from login
+        where role = 2
+    </select>
+
+    <select id="isExistUsername" resultType="boolean">
+        select
+        count(*)
+        from login
+        where username = #{username}
+    </select>
+</mapper>

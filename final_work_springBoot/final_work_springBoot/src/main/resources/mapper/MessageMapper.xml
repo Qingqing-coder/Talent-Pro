@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.base_study_test.irms_back.mapper.MessageMapper">
+    <resultMap id="Base_Message" type="com.base_study_test.irms_back.entity.Message">
+        <result property="id" column="id"/>
+        <result property="from" column="from"/>
+        <result property="to" column="to"/>
+        <result property="content" column="content"/>
+        <result property="sendTime" column="sendTime"/>
+    </resultMap>
+
+    <insert id="addMessage" parameterType="com.base_study_test.irms_back.entity.Message">
+        INSERT INTO message (`from`, `to`, content, sendTime)
+        VALUES (#{from}, #{to}, #{content}, #{sendTime})
+    </insert>
+
+    <select id="selectHistoryMessages" resultType="com.base_study_test.irms_back.entity.Message">
+        SELECT id, `from`, `to`, sendTime, content
+        FROM message
+        WHERE (`from` = #{from} AND `to` = #{to})
+           OR (`from` = #{to} AND `to` = #{from})
+        ORDER BY sendTime
+    </select>
+
+    <select id="selectMessagesByFrom" resultMap="Base_Message">
+        SELECT *
+        FROM message
+        WHERE `from` = #{from}
+        ORDER BY sendTime
+    </select>
+
+    <select id="selectMessagesByTo" resultMap="Base_Message">
+        SELECT *
+        FROM message
+        WHERE `to` = #{to}
+        ORDER BY sendTime
+    </select>
+</mapper>

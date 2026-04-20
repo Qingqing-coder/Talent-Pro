@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.base_study_test.irms_back.mapper.EmpPreMapper">
+    <resultMap id="Base_EmpPre" type="com.base_study_test.irms_back.entity.EmpPre">
+        <result property="preferenceId" column="preference_id" />
+        <result property="username" column="employee_username" />
+        <result property="jobId" column="preference_job_id" />
+    </resultMap>
+
+    <resultMap id="Base_Emp" type="com.base_study_test.irms_back.entity.Emp">
+        <result property="username" column="username"/>
+        <result property="nickname" column="nickname"/>
+        <result property="password" column="password"/>
+        <result property="name" column="name"/>
+        <result property="age" column="age"/>
+        <result property="salaryWishK" column="salary_wish_k"/>
+        <result property="address" column="address"/>
+        <result property="hasExperience" column="has_experience"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="eduBack" column="edu_back"/>
+        <result property="introduction" column="introduction"/>
+        <result property="sex" column="sex"/>
+        <result property="major" column="major"/>
+    </resultMap>
+
+    <resultMap id="Base_Job" type="com.base_study_test.irms_back.entity.Job">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="salary" column="salary"/>
+        <result property="companyName" column="company_name"/>
+        <result property="companySize" column="company_size"/>
+        <result property="fullLocation" column="full_location"/>
+        <result property="experience" column="experience"/>
+        <result property="education" column="education"/>
+        <result property="type" column="type"/>
+        <result property="benefits" column="benefits"/>
+        <result property="jobType" column="job_type"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="Base_EmpPre">
+        select preference_id, employee_username, preference_job_id
+        from employeepreference
+        where preference_id = #{preferenceId}
+    </select>
+
+    <select id="selectByUsername"
+            resultMap="Base_Job"
+            resultType="com.base_study_test.irms_back.entity.Job"
+    >
+        select *
+        from job
+        where id in (
+            select preference_job_id
+            from employeepreference
+            where employee_username = #{username}
+        )
+    </select>
+
+    <select id="selectByJobId"
+            resultMap="Base_Emp"
+            resultType="com.base_study_test.irms_back.entity.Emp"
+    >
+        select *
+        from employee
+        where username in (
+            select employee_username
+            from employeepreference
+            where preference_job_id = #{jobId}
+        )
+    </select>
+
+    <insert id="addEmpPre">
+        insert into employeepreference(preference_id, employee_username, preference_job_id)
+        values (#{preferenceId},#{username}, #{jobId})
+    </insert>
+
+    <delete id="deleteEmpPre">
+        delete from employeepreference
+        where employee_username = #{username}
+        and preference_job_id = #{jobId}
+    </delete>
+</mapper>

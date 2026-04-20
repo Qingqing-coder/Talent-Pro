@@ -1,0 +1,30 @@
+# ========================
+# 1. Spring Boot (后端)
+# ========================
+target/
+*.jar
+*.war
+# 强烈建议忽略包含 MySQL/Neo4j 密码的本地配置文件
+application-dev.yml
+application-local.properties
+
+# ========================
+# 2. Vue3 (前端)
+# ========================
+node_modules/
+dist/
+dist-ssr/
+.env.local
+.env.*.local
+
+# ========================
+# 3. 编辑器与系统缓存
+# ========================
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
+Thumbs.db

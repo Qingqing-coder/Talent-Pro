@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识图谱</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .header button {
+            padding: 10px 20px;
+            background: white;
+            color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .header button:hover {
+            background: #f8f9fa;
+        }
+        .header button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .graph-container {
+            width: 100%;
+            height: 600px;
+            margin: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .info {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #ddd;
+        }
+        .info p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>知识图谱</h1>
+            <button onclick="loadData()" id="refreshBtn">刷新数据</button>
+        </div>
+        
+        <div id="graph" class="graph-container"></div>
+        
+        <div class="info" id="info" style="display: none;">
+            <p>节点数量: <span id="nodeCount">0</span></p>
+            <p>关系数量: <span id="linkCount">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+        
+        // 初始化图表
+        function initChart() {
+            const dom = document.getElementById("graph");
+            chart = echarts.init(dom);
+            
+            const emptyOption = {
+                title: { text: '知识图谱', left: 'center' },
+                series: [{
+                    type: "graph",
+                    layout: "force",
+                    roam: true,
+                    label: { show: true },
+                    force: { repulsion: 200 },
+                    data: [],
+                    links: [],
+                    categories: []
+                }]
+            };
+            
+            chart.setOption(emptyOption);
+        }
+        
+        // 加载数据
+        async function loadData() {
+            if (!chart) return;
+            
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.textContent = '加载中...';
+            
+            try {
+                const backendUrls = [
+                    "http://127.0.0.1:8080/graph/data",
+                    "http://localhost:8080/graph/data"
+                ];
+                
+                let response = null;
+                for (const url of backendUrls) {
+                    try {
+                        response = await axios.get(url);
+                        break;
+                    } catch (error) {
+                        console.log(`尝试 ${url} 失败:`, error.message);
+                    }
+                }
+                
+                if (!response) {
+                    throw new Error('所有后端地址都连接失败');
+                }
+                
+                const data = response.data;
+                console.log('获取数据成功:', data);
+                
+                // 更新信息显示
+                document.getElementById('nodeCount').textContent = data.totalNodes || 0;
+                document.getElementById('linkCount').textContent = data.totalLinks || 0;
+                document.getElementById('info').style.display = 'block';
+                
+                // 处理节点数据
+                const nodes = data.nodes || [];
+                const links = data.links || [];
+                
+                // 生成类别
+                const categories = [...new Set(nodes.map(n => n.category))].map(c => ({ name: c }));
+                
+                // 更新图表
+                const option = {
+                    title: { 
+                        text: `知识图谱 (${nodes.length}个节点, ${links.length}个关系)`,
+                        left: 'center' 
+                    },
+                    legend: { 
+                        show: categories.length > 0,
+                        data: categories.map(c => c.name),
+                        top: 'bottom'
+                    },
+                    series: [{
+                        type: "graph",
+                        layout: "force",
+                        roam: true,
+                        label: { show: true },
+                        force: { repulsion: 200 },
+                        data: nodes,
+                        links: links.map(l => ({
+                            source: l.source,
+                            target: l.target,
+                            label: { show: true, formatter: l.label }
+                        })),
+                        categories
+                    }]
+                };
+                
+                chart.setOption(option);
+                
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                
+                const errorOption = {
+                    title: { 
+                        text: '数据加载失败', 
+                        left: 'center',
+                        textStyle: { color: '#ff4444' }
+                    },
+                    series: [{
+                        type: "graph",
+                        layout: "force",
+                        roam: true,
+                        label: { show: true },
+                        force: { repulsion: 200 },
+                        data: [],
+                        links: [],
+                        categories: []
+                    }]
+                };
+                
+                chart.setOption(errorOption);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '刷新数据';
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.onload = function() {
+            initChart();
+            loadData();
+        };
+    </script>
+</body>
+</html>
+

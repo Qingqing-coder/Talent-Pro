@@ -1,0 +1,57 @@
+
+spring:
+  application:
+    name: IRMS_back
+  datasource:
+    #数据库驱动
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: "123456"
+    url: jdbc:mysql://localhost:3306/irms?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true&useSSL=false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  web:
+    resources:
+      static-locations: file:D:/other/user_photo/
+  neo4j:
+    uri: bolt://localhost:7687
+    authentication:
+      username: neo4j
+      password: 123456789
+server:
+  port: 8080
+  address: 0.0.0.0
+mybatis:
+  #表示在当前的文件夹下mapper文件夹中任意名字的xml文件中
+  mapper-locations: classpath:mapper/*.xml
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+# springdoc-openapi项目配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.base_study_test.irms_back.controller
+# knife4j的增强配置，不需要增强可以不配
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+pagehelper:
+  propertyName: propertyValue
+  reasonable: false
+  defaultCount: true # 分页插件默认参数支持 default-count 形式，自定义扩展的参数，必须大小写一致
+
+face:
+  image-dir: D:\IDEA\data program\final_work_springBoot\facedata/id_photos/  # 证件照存储目录
+  temp-dir: D:\IDEA\data program\final_work_springBoot\facedata/temp_photos/ # 临时照片存储目录
+  similarity-threshold: 70.0      # 相似度阈值(百分比)
+

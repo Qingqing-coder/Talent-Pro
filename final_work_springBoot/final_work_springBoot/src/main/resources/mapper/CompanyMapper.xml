@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.base_study_test.irms_back.mapper.CompanyMapper">
+    <resultMap id="Base_Company" type="com.base_study_test.irms_back.entity.Company">
+        <result property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="nickname" column="nickname"/>
+        <result property="password" column="password"/>
+        <result property="companyIntroduction" column="company_introduction"/>
+    </resultMap>
+
+    <resultMap id="Base_Job" type="com.base_study_test.irms_back.entity.Job">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="salary" column="salary"/>
+        <result property="companyName" column="company_name"/>
+        <result property="companySize" column="company_size"/>
+        <result property="fullLocation" column="full_location"/>
+        <result property="experience" column="experience"/>
+        <result property="education" column="education"/>
+        <result property="type" column="type"/>
+        <result property="benefits" column="benefits"/>
+        <result property="jobType" column="job_type"/>
+    </resultMap>
+
+    <sql id="Base_column">
+        id, username, nickname, password, company_introduction
+    </sql>
+
+    <select id="selectAllCompany" resultMap="Base_Company">
+        select
+        <include refid="Base_column"/>
+        from company
+    </select>
+
+    <select id="selectByCondition" resultMap="Base_Company">
+        select
+        <include refid="Base_column"/>
+        from company
+        <where>
+            <!--            id查询-->
+            <if test="id != null">
+                and id = #{id}
+            </if>
+
+            <!--            用户名称查询-->
+            <if test="username != null and username != ''">
+                and username = #{username}
+            </if>
+
+            <!--            昵称查询-->
+            <if test="nickname != null and nickname != ''">
+                and nickname = #{nickname}
+            </if>
+
+            <!--            密码查询-->
+            <if test="password != null and password != ''">
+                and password = #{password}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateCompany">
+        update company
+        <set>
+            <if test="nickname != null">
+                nickname = #{nickname},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="companyIntroduction != null">
+                company_introduction = #{companyIntroduction},
+            </if>
+        </set>
+        where username = #{username}
+    </update>
+
+    <delete id="deleteByUsername">
+        delete from company where username = #{username}
+    </delete>
+
+    <insert id="addCompany">
+        insert into company(username, nickname, password, company_introduction)
+        values(#{username}, #{nickname}, #{password}, #{companyIntroduction})
+    </insert>
+
+    <select id="selectAllJobByUsername"
+            resultMap="Base_Job"
+            resultType="com.base_study_test.irms_back.entity.Job">
+        SELECT *
+        FROM job
+        WHERE company_name = (
+            SELECT nickname
+            FROM company
+            WHERE username = #{username}
+        )
+    </select>
+
+    <update id="updateCompanyPwd">
+        update login
+        set password = #{password}
+        where username = #{username}
+    </update>
+</mapper>

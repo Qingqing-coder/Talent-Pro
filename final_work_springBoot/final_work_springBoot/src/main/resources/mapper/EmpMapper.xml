@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.base_study_test.irms_back.mapper.EmpMapper">
+    <resultMap id="Base_Emp" type="com.base_study_test.irms_back.entity.Emp">
+        <result property="username" column="username"/>
+        <result property="nickname" column="nickname"/>
+        <result property="password" column="password"/>
+        <result property="name" column="name"/>
+        <result property="age" column="age"/>
+        <result property="salaryWishK" column="salary_wish_k"/>
+        <result property="address" column="address"/>
+        <result property="hasExperience" column="has_experience"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="eduBack" column="edu_back"/>
+        <result property="introduction" column="introduction"/>
+        <result property="sex" column="sex"/>
+        <result property="major" column="major"/>
+    </resultMap>
+
+    <sql id="Base_column">
+        username, nickname, password, name, age, salary_wish_k, address, has_experience, phone, email, edu_back, introduction, sex, major
+    </sql>
+
+    <select id="selectAllEmp" resultMap="Base_Emp">
+        select
+        <include refid="Base_column"/>
+        from employee
+    </select>
+
+    <select id="selectByCondition" resultMap="Base_Emp">
+        select
+        <include refid="Base_column"/>
+        from employee
+        <where>
+            <!--            用户名称查询-->
+            <if test="username != null and username != ''">
+                and username = #{username}
+            </if>
+
+            <!--            昵称查询-->
+            <if test="nickname != null and nickname != ''">
+                and nickname = #{nickname}
+            </if>
+
+            <!--            姓名查询-->
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+
+            <!--            年龄范围上限查询-->
+            <if test="age != null">
+                and age &lt;= #{age}
+            </if>
+
+            <!--            是否有经验查询-->
+            <if test="hasExperience != null">
+                and has_experience = #{hasExperience}
+            </if>
+
+            <!--            性别查询-->
+            <if test="sex != null">
+                and sex = #{sex}
+            </if>
+
+            <!--            专业查询-->
+            <if test="major != null and major != ''">
+                and major = #{major}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateEmp">
+        update employee
+        <set>
+            <if test="nickname != null">
+                nickname = #{nickname},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="age != null">
+                age = #{age},
+            </if>
+            <if test="salaryWishK != null">
+                salary_wish_k = #{salaryWishK},
+            </if>
+            <if test="address != null">
+                address = #{address},
+            </if>
+            <if test="hasExperience != null">
+                has_experience = #{hasExperience},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="eduBack != null">
+                edu_back = #{eduBack},
+            </if>
+            <if test="introduction != null">
+                introduction = #{introduction},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="major != null">
+                major = #{major},
+            </if>
+        </set>
+        where username = #{username}
+    </update>
+
+    <delete id="deleteByUsername">
+        delete from employee where username = #{username}
+    </delete>
+
+    <insert id="addEmp">
+        insert into employee(username, nickname, password, name, age, salary_wish_k, address, has_experience, phone, email, edu_back, introduction, sex, major)
+        values(#{username}, #{nickname}, #{password}, #{name}, #{age}, #{salaryWishK}, #{address}, #{hasExperience}, #{phone}, #{email}, #{eduBack}, #{introduction}, #{sex}, #{major})
+    </insert>
+
+    <update id="updateEmpPwd">
+        update login
+        set password = #{password}
+        where username = #{username}
+    </update>
+
+    <select id="selectPhotoByUsername" resultType="java.lang.String">
+        select photo from employee where username = #{username}
+    </select>
+
+    <update id="updatePhotoByUsername">
+        update employee
+        set photo = #{photo}
+        where username = #{username}
+    </update>
+</mapper>

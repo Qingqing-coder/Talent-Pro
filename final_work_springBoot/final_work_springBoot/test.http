@@ -1,0 +1,6 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+###
+GET http://127.0.0.1:8080/job/selectWithCondition?sortFiled=preNum&sortOrder=desc&pageNum=1&pageSize=10

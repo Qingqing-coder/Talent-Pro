@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.base_study_test.irms_back.mapper.JobMapper">
+    <resultMap id="Base_Job" type="com.base_study_test.irms_back.entity.Job">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="salary" column="salary"/>
+        <result property="companyName" column="company_name"/>
+        <result property="companySize" column="company_size"/>
+        <result property="fullLocation" column="full_location"/>
+        <result property="experience" column="experience"/>
+        <result property="education" column="education"/>
+        <result property="type" column="type"/>
+        <result property="benefits" column="benefits"/>
+        <result property="jobType" column="job_type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="preNum" column="pre_num"/>
+    </resultMap>
+
+    <sql id="Base_column">
+        id, title, salary, company_name, company_size, full_Location, experience, education, type, benefits, job_type, create_time
+    </sql>
+
+    <select id="selectAllJob" resultMap="Base_Job">
+        select
+        <include refid="Base_column"/>
+        from job
+    </select>
+
+    <select id="selectByCondition" resultMap="Base_Job">
+        SELECT j.*,
+        (SELECT COUNT(*) FROM employeepreference WHERE preference_job_id = j.id) AS pre_num
+        FROM job j
+        <where>
+            <!--            职位id查询-->
+            <if test="condition.id != null">
+                and id = #{condition.id}
+            </if>
+            <!--            职位名称查询-->
+            <if test="condition.title != null and condition.title != ''">
+                and title like CONCAT('%', #{condition.title}, '%')
+            </if>
+
+            <!--            职位薪资查询-->
+            <if test="condition.salary != null and condition.salary != ''">
+                and salary = #{condition.salary}
+            </if>
+
+            <!--            公司名称查询-->
+            <if test="condition.companyName != null and condition.companyName != ''">
+                and company_name LIKE CONCAT('%', #{condition.companyName}, '%')
+            </if>
+
+            <!--            公司规模查询-->
+            <if test="condition.companySize != null and condition.companySize != ''">
+                and company_size = #{condition.companySize}
+            </if>
+
+            <!--            职位所在地查询-->
+            <if test="condition.fullLocation != null and condition.fullLocation != ''">
+                and full_location = #{condition.fullLocation}
+            </if>
+
+            <!--            职位经验查询-->
+            <if test="condition.experience != null and condition.experience != ''">
+                and experience = #{condition.experience}
+            </if>
+
+
+            <!--            职位学历查询-->
+            <if test="condition.education != null and condition.education != ''">
+                and education = #{condition.education}
+            </if>
+
+            <!--            职位类型查询-->
+            <if test="condition.type != null and condition.type != ''">
+                and type = #{condition.type}
+            </if>
+
+            <!--            职位待遇查询-->
+            <if test="condition.benefits != null and condition.benefits != ''">
+                and benefits = #{condition.benefits}
+            </if>
+
+            <!--            职位所属类型查询-->
+            <choose>
+                <when test="condition.jobType != null and condition.jobType != ''">
+                    AND (
+                    <foreach item="item" index="index" collection="condition.jobType.split('，')" separator=" OR ">
+                        job_type LIKE CONCAT('%', #{item}, '%')
+                    </foreach>
+                    )
+                </when>
+            </choose>
+        </where>
+
+        <!-- 添加排序逻辑 -->
+        <choose>
+            <when test="sortField == '最热推荐'">
+                ORDER BY pre_num
+                <choose>
+                    <when test="sortOrder == 'asc'">ASC</when>
+                    <otherwise>DESC</otherwise>
+                </choose>
+            </when>
+            <when test="sortField == '最新' and sortOrder == 'desc'">
+                ORDER BY j.create_time DESC
+            </when>
+            <when test="sortField == '高薪' and sortOrder == 'desc'">
+                ORDER BY
+                CAST(
+                REGEXP_SUBSTR(
+                SUBSTRING_INDEX(j.salary, '-', -1),
+                '[0-9]+'
+                ) AS UNSIGNED
+                ) DESC
+            </when>
+            <otherwise>
+                ORDER BY
+                CAST(
+                REGEXP_SUBSTR(
+                SUBSTRING_INDEX(j.salary, '-', -1),
+                '[0-9]+'
+                ) AS UNSIGNED
+                ) DESC <!-- 默认排序 -->
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="updateJob">
+        update job
+        <set>
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <if test="salary != null">
+                salary = #{salary},
+            </if>
+            <if test="companyName != null">
+                company_name = #{companyName},
+            </if>
+            <if test="companySize != null">
+                company_size = #{companySize},
+            </if>
+            <if test="fullLocation != null">
+                full_location = #{fullLocation},
+            </if>
+            <if test="experience != null">
+                experience = #{experience},
+            </if>
+            <if test="education != null">
+                education = #{education},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="benefits != null">
+                benefits = #{benefits},
+            </if>
+            <if test="jobType != null">
+                job_type = #{jobType},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from job where id = #{id}
+    </delete>
+
+    <delete id="deleteByCompanyName">
+        delete from job where company_name = #{companyName}
+    </delete>
+
+    <insert id="addJob">
+        insert into job(title, salary, company_name, company_size, full_location, experience, education, type, benefits, job_type)
+        values(#{title}, #{salary}, #{companyName}, #{companySize}, #{fullLocation}, #{experience}, #{education}, #{type}, #{benefits}, #{jobType})
+    </insert>
+
+    <select id="selectByMaxSalary" resultMap="Base_Job">
+        SELECT
+        <include refid="Base_column"/>
+        FROM job
+        ORDER BY
+        CAST(
+        REGEXP_SUBSTR(
+        SUBSTRING_INDEX(salary, '-', -1),
+        '[0-9]+'
+        ) AS UNSIGNED
+        ) DESC
+    </select>
+
+    <select id="selectByIdDesc" resultMap="Base_Job">
+        SELECT
+        <include refid="Base_column"/>
+        FROM job
+        ORDER BY
+        id DESC
+    </select>
+</mapper>
